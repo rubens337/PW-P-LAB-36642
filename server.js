@@ -18,6 +18,7 @@ app.get("/movies", (req, res) => {
     res.json(movies);
 });
 
+
 app.get("/movies/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const movie = movies.find((m) => m.id === id);
@@ -29,8 +30,9 @@ app.get("/movies/:id", (req, res) => {
     res.status(200).json({ data: movie});
 });
 
+
 app.post("/movies", (req, res) => {
-    const { title, year} = req.body;
+    const {title, year} = req.body;
 
     //validar
     if (!title || !year) {
@@ -47,6 +49,35 @@ app.post("/movies", (req, res) => {
     res.status(201).json({data: newMovie });
 });
 
+app.put("/movies/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = movies.findIndex((m) => m.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({message: "Movie not found"});
+    }
+
+    const {title, year} = req.body;
+
+    if (!title || !year) {
+        return res.status(400).json({message: "Campos 'title' e 'year' são obrigatorios"});
+    }
+
+    movies[index] = {id, title, year};
+    res.status(200).json({data: movies[index] });
+});
+
+app.delete("/movies/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = movies.findIndex((m) => m.id === id);
+
+    if (index === -1) {
+    return res.status(404).json({message: "Movie not Found"});
+  }
+
+  movies.splice(index, 1);
+  res.status(200).json({message: "Movie deleted"});
+});
 
 // Rota não encontrada (404)
 app.use((req, res) => {
