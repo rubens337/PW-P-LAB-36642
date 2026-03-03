@@ -1,0 +1,27 @@
+{
+  "name": "lab1",
+  "version": "1.0.0",
+  "description": "exercicio lab1",
+  "homepage": "https://github.com/rubens337/PW-P-LAB-36642#readme",
+  "bugs": {
+    "url": "https://github.com/rubens337/PW-P-LAB-36642/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubens337/PW-P-LAB-36642.git"
+  },
+  "license": "ISC",
+  "author": "ruben santos",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.14"
+  }
+}
