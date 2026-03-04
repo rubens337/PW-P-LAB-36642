@@ -79,6 +79,10 @@ app.delete("/movies/:id", (req, res) => {
   res.status(200).json({message: "Movie deleted"});
 });
 
+app.get("/tasks", (req, res) => {
+    res.json(tasks);
+});
+
 // Rota não encontrada (404)
 app.use((req, res) => {
   res.status(404).json({ message: "Rota não encontrada" });
