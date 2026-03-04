@@ -5,6 +5,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const movies = require("./movies.js");
 const tasks = require("./tasks.js");
+const { parse } = require("dotenv");
 
 const app = express();
 
@@ -14,12 +15,12 @@ app.use(morgan("dev"));
 
 const PORT = process.env.SERVER_PORT || 4242;
 
-
+//lista todos os filmes registados
 app.get("/movies", (req, res) => {
     res.json(movies);
 });
 
-
+//mostra um determinado filme escolhido por id
 app.get("/movies/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const movie = movies.find((m) => m.id === id);
@@ -31,7 +32,7 @@ app.get("/movies/:id", (req, res) => {
     res.status(200).json({ data: movie});
 });
 
-
+//adiciona um novo filme
 app.post("/movies", (req, res) => {
     const {title, year} = req.body;
 
@@ -50,6 +51,7 @@ app.post("/movies", (req, res) => {
     res.status(201).json({data: newMovie });
 });
 
+//atualizar um filme ja existente
 app.put("/movies/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const index = movies.findIndex((m) => m.id === id);
@@ -68,6 +70,7 @@ app.put("/movies/:id", (req, res) => {
     res.status(200).json({data: movies[index] });
 });
 
+//apagar um filme
 app.delete("/movies/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const index = movies.findIndex((m) => m.id === id);
@@ -80,10 +83,12 @@ app.delete("/movies/:id", (req, res) => {
   res.status(200).json({message: "Movie deleted"});
 });
 
+//lista todas as tasks
 app.get("/tasks", (req, res) => {
     res.status(200).json({data: tasks});
 });
 
+//mostra uma task escolhida pelo id
 app.get("/tasks/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const task = tasks.find((t) => t.id === id);
@@ -95,8 +100,9 @@ app.get("/tasks/:id", (req, res) => {
     res.status(200).json({data: task});
 });
 
-// task completed (req. query)
+// task completed (req. query) fazer
 
+//adicionar uma nova task
 app.post("/tasks", (req, res) => {
     const {title, completed, priority} = req.body;
 
@@ -105,8 +111,45 @@ app.post("/tasks", (req, res) => {
     }
 
     const newTask = {
-        id: tasks.length > 0 
+        id: tasks.length > 0 ? tasks[tasks.length -1].id +1 : 1, title, completed, priority
+    };
+
+    tasks.push(newTask);
+    res.status(201).json({data: newTask});
+});
+
+//atualizar uma task especifica
+app.put("/tasks/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = tasks.findIndex((t) => t.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({message: "Task not found"});
     }
+
+    const {title, completed, priority} = req.body;
+
+    if(!title || completed == undefined || !priority) {
+         return res.status(400).json({ message: "Campos 'title' , 'completed' e 'priority' são obrigatorios"});
+    }
+
+    tasks[index] = {id, title, completed, priority};
+    res.status(200).json({data: tasks[index]});
+});
+
+//patch alternar estado
+
+//apagar task especifica
+app.delete("/tasks/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = tasks.findIndex((t) => t.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({message: "Task not found"});
+    }
+
+    tasks.splice(index, 1);
+    res.status(200).json({message: "Task Deleted"});
 });
 
 // Rota não encontrada (404)
