@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const movies = require("./movies.js");
+const tasks = require("./tasks.js");
 
 const app = express();
 
@@ -80,7 +81,32 @@ app.delete("/movies/:id", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
-    res.json(tasks);
+    res.status(200).json({data: tasks});
+});
+
+app.get("/tasks/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const task = tasks.find((t) => t.id === id);
+
+    if(!task) {
+        return res.status(404).json({message: "Task not found"});
+    }
+
+    res.status(200).json({data: task});
+});
+
+// task completed (req. query)
+
+app.post("/tasks", (req, res) => {
+    const {title, completed, priority} = req.body;
+
+    if(!title || !completed || !priority) {
+         return res.status(400).json({ message: "Campos 'title' , 'completed' e 'priority' são obrigatorios"});
+    }
+
+    const newTask = {
+        id: tasks.length > 0 
+    }
 });
 
 // Rota não encontrada (404)
