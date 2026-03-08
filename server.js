@@ -83,10 +83,7 @@ app.delete("/movies/:id", (req, res) => {
   res.status(200).json({message: "Movie deleted"});
 });
 
-//lista todas as tasks
-app.get("/tasks", (req, res) => {
-    res.status(200).json({data: tasks});
-});
+
 
 //mostra uma task escolhida pelo id
 app.get("/tasks/:id", (req, res) => {
@@ -100,7 +97,20 @@ app.get("/tasks/:id", (req, res) => {
     res.status(200).json({data: task});
 });
 
-// task completed (req. query) fazer
+// lista todas as tasks, com filtro de conclusão
+app.get("/tasks", (req, res) => {
+    console.log("Query recebido:", req.query);
+    const {completed} = req.query;
+
+    let result = tasks;
+
+    if(completed !== undefined) {
+        result =tasks.filter(t => String(t.completed) === completed);
+    }
+
+    res.status(200).json({data: result});
+    
+});
 
 //adicionar uma nova task
 app.post("/tasks", (req, res) => {
@@ -138,6 +148,18 @@ app.put("/tasks/:id", (req, res) => {
 });
 
 //patch alternar estado
+app.patch("/tasks/:id/toggle", (req, res) => {
+    const {id} = req.params;
+
+    const task = tasks.find((t) => t.id === Number(id));
+
+    if (!task) {
+        return res.status(404).json({message: "Task not found!"});
+    }
+
+    task.completed = !task.completed;
+    return res.status(200).json({data: task});
+});
 
 //apagar task especifica
 app.delete("/tasks/:id", (req, res) => {
@@ -151,6 +173,8 @@ app.delete("/tasks/:id", (req, res) => {
     tasks.splice(index, 1);
     res.status(200).json({message: "Task Deleted"});
 });
+
+
 
 // Rota não encontrada (404)
 app.use((req, res) => {
