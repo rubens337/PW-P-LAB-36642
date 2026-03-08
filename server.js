@@ -1,5 +1,7 @@
 require("dotenv").config();
-
+const { PrismaClient } = require("@prisma/client");
+const prima = new PrismaClient();
+ 
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -174,6 +176,29 @@ app.delete("/tasks/:id", (req, res) => {
     res.status(200).json({message: "Task Deleted"});
 });
 
+
+//rotas tasks prisma
+
+app.post("/prisma/tasks", async (req, res) => {
+    try {
+        const createdTasks = [];
+
+        for (const t of tasks) {
+            const newTask = await Prisma.task.create({
+                data: {
+                    title : t.title,
+                    completed: t.completed,
+                    priority: t.priority
+                }
+            });
+            createdTasks.push(newTask);
+        }
+        res.status(201).json({message: "Tasks created!", data: createdTasks});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: "Erro ao importar as tasks"})
+    }
+});
 
 
 // Rota não encontrada (404)
