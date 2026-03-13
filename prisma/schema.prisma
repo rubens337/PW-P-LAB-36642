@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -26,6 +25,6 @@ model Task {
   id        Int      @id @default(autoincrement())
   title     String
   completed Boolean  @default(false)
-  priority  Int
+  priority  String
   createdAt DateTime @default(now())
 }

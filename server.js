@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
-const prima = new PrismaClient();
+const prisma = new PrismaClient();
  
 const express = require("express");
 const cors = require("cors");
@@ -179,12 +179,13 @@ app.delete("/tasks/:id", (req, res) => {
 
 //rotas tasks prisma
 
-app.post("/prisma/tasks", async (req, res) => {
+//importar as tasks do lab2 para a base de dados do prisma
+app.post("/importar/prisma/tasks", async (req, res) => {
     try {
         const createdTasks = [];
 
         for (const t of tasks) {
-            const newTask = await Prisma.task.create({
+            const newTask = await prisma.task.create({
                 data: {
                     title : t.title,
                     completed: t.completed,
@@ -193,12 +194,147 @@ app.post("/prisma/tasks", async (req, res) => {
             });
             createdTasks.push(newTask);
         }
-        res.status(201).json({message: "Tasks created!", data: createdTasks});
+        res.status(201).json({message: "Tasks criadas!", data: createdTasks});
     } catch (error) {
         console.error(error);
         res.status(500).json({message: "Erro ao importar as tasks"})
     }
 });
+
+
+
+//lista todas as tasks da base de dados
+app.get("/prisma/tasks", async (req, res) => {
+    try {
+        const {completed} = req.query;
+
+        const tasks = await prisma.task.findMany({
+            where: completed !== undefined ? {
+                completed: completed === "true"
+            } : {}
+        });
+        res.status(200).json(tasks);
+    } catch (error) {
+        console.error("Erro ao obter tasks:", error);
+        res.status(500).json({message: "Erro ao obter tasks"});
+    }
+});
+
+//lista uma task especifica da base de dados
+app.get("/prisma/tasks/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const task = await prisma.task.findUnique({
+            where: { id: Number(id) }
+        });
+        if (!task) {
+            return res.status(404).json({message: "Task não encontrada"});
+        }
+        
+        res.status(200).json(task);
+    } catch (error) {
+        console.error("Erro ao obter task:", error);
+        res.status(500).json({message: "Erro ao obter task"});
+    }
+});
+
+//atualizar uma task especifica
+app.put("/prisma/tasks/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const {title, completed, priority} = req.body;
+
+        const taskExist = await prisma.task.findUnique({
+            where: { id: Number(id)}
+        });
+        if (!taskExist) {
+            return res.status(404).json({message: "task nao encontrada"});
+        }
+
+        const updatedTask = await prisma.task.update({
+            where: { id: Number(id)},
+            data: { 
+                title: title ?? taskExist.title, 
+                completed: completed ?? taskExist.completed, 
+                priority: priority ?? taskExist.priority}
+        });
+        
+        res.status(200).json(updatedTask);
+    } catch (error) {
+        console.error("Erro ao atualizar task: ", error);
+        res.status(500).json({message: "Erro ao atualizar task"});
+    }
+});
+
+//criar nova task
+app.post("prisma/tasks", async (req, res) => {
+    try {
+        const {title, completed, priority} = req.body;
+
+        if (!title) {
+            return res.status(400).json({message: "Campo 'title' é obrigatorio"});
+        }
+
+        const newTask = await prisma.task.create({
+            data: {
+                title,
+                completed: completed ?? false,
+                priority: priority ?? "normal"
+            }
+        });
+        return res.status(201).json(newTask);
+
+    } catch (error) {
+        console.error("Erro ao criar task: ", error);
+        res.status(500).json({message: "Erro ao criar task"});
+    }
+});
+
+//apagar uma task
+app.delete("/prisma/tasks/:id", async (req, res) => {
+    try {
+        const {id} = req.params;
+        const taskId = Number(id);
+
+        const deleteTask = await prisma.task.delete({
+            where: { id: taskId}
+        });
+        res.status(204).json({message: "Task apagada"});
+
+    } catch (error){
+        console.error("Erro ao apagar task: ", error);
+        res.status(500).json({message: "Erro ao apagar task"});
+    }
+});
+
+//patch alternar estado prisma
+app.patch("/prisma/tasks/:id/toggle", async (req, res) => {
+    try{
+        const {id} = req.params;
+        const taskId = Number(id);
+
+        const task = await prisma.tasl.findUnique({
+            where: { id: taskId}
+        });
+
+        if (!task) {
+            return res.status(404).json({message: "task nao encontrada"});
+        }
+
+        const novoEstado = !task.completed;
+
+        const updatedTask = await prisma.task.update({
+            where: { id: taskId},
+            data: { completed: novoEstado}
+        });
+        res.status(200).json(updatedTask);
+
+    } catch (error) {
+        console.error("Erro ao alternar estado: ", error);
+        res.status(500).json({message: "Erro ao alternar estado"});
+    }
+});
+
 
 
 // Rota não encontrada (404)
